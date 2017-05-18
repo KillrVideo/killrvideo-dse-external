@@ -2,6 +2,8 @@
 
 echo '=> KillrVideo DOCKER IP = '$KILLRVIDEO_DOCKER_IP
 echo '=> External Cluster IP = '$EXTERNAL_CLUSTER_IP
+echo '=> Username = '$USERNAME
+echo '=> Password = '$PASSWORD
 
 echo '=> Spoofing Cassandra cluster in ETCD'
 curl http://$KILLRVIDEO_DOCKER_IP:2379/v2/keys/killrvideo/services/$SERVICE_9042_NAME/external_cluster -XPUT -d value="$EXTERNAL_CLUSTER_IP:9042"
@@ -20,18 +22,18 @@ curl http://$KILLRVIDEO_DOCKER_IP:2379/v2/keys/killrvideo/services/$SERVICE_8983
 
     # Create the keyspace if necessary
     echo '=> Ensuring keyspace is created'
-    cqlsh -f /opt/killrvideo-data/keyspace.cql $EXTERNAL_CLUSTER_IP 9042
+    cqlsh -f /opt/killrvideo-data/keyspace.cql $EXTERNAL_CLUSTER_IP 9042 -u $USERNAME -p $PASSWORD
 
     # Create the schema if necessary
     echo '=> Ensuring schema is created'
-    cqlsh -f /opt/killrvideo-data/schema.cql -k killrvideo $EXTERNAL_CLUSTER_IP 9042
+    cqlsh -f /opt/killrvideo-data/schema.cql -k killrvideo $EXTERNAL_CLUSTER_IP 9042 -u $USERNAME -p $PASSWORD
 
     # Create DSE Search core if necessary
     echo '=> Ensuring DSE Search is configured'
     search_action='reload'
-    
+
     # Check for config (dsetool will return a message like 'No resource solrconfig.xml found for core XXX' if not created yet)
-    cfg="$(dsetool -h $EXTERNAL_CLUSTER_IP get_core_config killrvideo.videos)"
+    cfg="$(dsetool -h $EXTERNAL_CLUSTER_IP get_core_config killrvideo.videos -l $USERNAME -p $PASSWORD)"
     if [[ $cfg == "No resource"* ]]; then
       search_action='create'
     fi
@@ -39,10 +41,10 @@ curl http://$KILLRVIDEO_DOCKER_IP:2379/v2/keys/killrvideo/services/$SERVICE_8983
     # Create or reload core
     if [ "$search_action" = 'create' ]; then
       echo '=> Creating search core'
-      dsetool -h $EXTERNAL_CLUSTER_IP create_core killrvideo.videos schema=/opt/killrvideo-data/videos.schema.xml solrconfig=/opt/killrvideo-data/videos.solrconfig.xml
+      dsetool -h $EXTERNAL_CLUSTER_IP create_core killrvideo.videos schema=/opt/killrvideo-data/videos.schema.xml solrconfig=/opt/killrvideo-data/videos.solrconfig.xml -l $USERNAME -p $PASSWORD
     else
       echo '=> Reloading search core'
-      dsetool -h $EXTERNAL_CLUSTER_IP reload_core killrvideo.videos schema=/opt/killrvideo-data/videos.schema.xml solrconfig=/opt/killrvideo-data/videos.solrconfig.xml
+      dsetool -h $EXTERNAL_CLUSTER_IP reload_core killrvideo.videos schema=/opt/killrvideo-data/videos.schema.xml solrconfig=/opt/killrvideo-data/videos.solrconfig.xml -l $USERNAME -p $PASSWORD
     fi
 
     # Don't bootstrap next time we start
