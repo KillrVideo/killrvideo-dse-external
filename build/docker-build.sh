@@ -5,4 +5,4 @@ set -e
 . "`dirname $0`/VERSION"
 
 # Build with docker
-docker build -t killrvideo/killrvideo-dse:$DOCKER_BUILD_TAG .
+docker build -t killrvideo/killrvideo-dse-external:$DOCKER_BUILD_TAG .

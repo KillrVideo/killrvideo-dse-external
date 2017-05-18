@@ -5,7 +5,7 @@
 #   DOCKER_USER=username
 #   DOCKER_EMAIL=some@email.com
 #   DOCKER_PASS=somesecretpassword
-DOCKER_IMAGE=killrvideo/killrvideo-dse
+DOCKER_IMAGE=killrvideo/killrvideo-dse-external
 
 # Allow git describe to fail (which it will if this isn't a tagged commit)
 set +e 
