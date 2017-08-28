@@ -47,6 +47,20 @@ curl http://$KILLRVIDEO_DOCKER_IP:2379/v2/keys/killrvideo/services/$SERVICE_8983
       dsetool -h $EXTERNAL_CLUSTER_IP reload_core killrvideo.videos schema=/opt/killrvideo-data/videos.schema.xml solrconfig=/opt/killrvideo-data/videos.solrconfig.xml -l $USERNAME -p $PASSWORD
     fi
 
+    # Wait for port 8182 (Gremlin) to be ready for up to 120 seconds
+    echo '=> Waiting for DSE Graph to become available'
+    /wait-for-it.sh -t 120 $EXTERNAL_CLUSTER_IP:8182
+    echo '=> DSE Graph is available'
+
+    # Update the gremlin-console remote.yaml file to set the 
+    # remote hosts, username, and password
+    echo '=> Setting up remote.yaml for gremlin-console'
+    sed -i "s/.*hosts:.*/hosts: [$EXTERNAL_CLUSTER_IP]/;s/.*username:.*/username: $USERNAME/;s/.*password:.*/password: $PASSWORD/;" /opt/dse/resources/graph/gremlin-console/conf/remote.yaml 
+
+    # Create the graph if necessary
+    echo '=> Ensuring graph is created'
+    dse gremlin-console -e /opt/killrvideo-data/killrvideo_video_recommendations_schema.groovy
+
     # Don't bootstrap next time we start
     touch /killrvideo_bootstrapped
 
