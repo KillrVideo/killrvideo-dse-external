@@ -1,15 +1,15 @@
 :remote connect tinkerpop.server conf/remote.yaml session-managed
 :remote config timeout max
 :remote console
-system.graph("killrvideo_video_recommendations_TEST5").
+system.graph("killrvideo_video_recommendations").
   replication("{'class' : 'NetworkTopologyStrategy', 'us-west-2-graph' : 3}").
   systemReplication("{'class' : 'NetworkTopologyStrategy', 'us-west-2-graph' : 3}").
-  option("graph.schema_mode").set("Development").
-  option("graph.allow_scan").set("true").
+  option("graph.schema_mode").set("Production").
+  option("graph.allow_scan").set("false").
   option("graph.tx_groups.*.write_consistency").set("QUORUM").
   ifNotExists().
   create()
-:remote config alias g killrvideo_video_recommendations_TEST5.g
+:remote config alias g killrvideo_video_recommendations.g
 
 // Create property keys
 schema.propertyKey("tag").Text().ifNotExists().create();

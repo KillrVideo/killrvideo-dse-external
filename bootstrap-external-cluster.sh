@@ -5,11 +5,27 @@ echo '=> External Cluster IP = '$EXTERNAL_CLUSTER_IP
 echo '=> Username = '$USERNAME
 echo '=> Password = '$PASSWORD
 
+# This is dirty, I'm sorry.  We have a race condition between the keys generated via the dse container
+# and the dse-external container.  In the dse-external case we need to delete the "local" server IP
+# reference and point to our remote cluster.  I need to sleep here to ensure the "local" is created.
+# I would look it up, but the key name is dynamically generated from another service and etcd does not have
+# a wildcard search function that I know of nor do I have a reference to the actual name so I am relegated
+# to just ham-fisting this and wiping the whole dir responsible for each key I care about.
+sleep 5
+
+echo '=> Deleting Cassandra keys in ETCD'
+curl http://$KILLRVIDEO_DOCKER_IP:2379/v2/keys/killrvideo/services/$SERVICE_9042_NAME?recursive=true -XDELETE
+curl http://$KILLRVIDEO_DOCKER_IP:2379/v2/keys/killrvideo/services/$SERVICE_8983_NAME?recursive=true -XDELETE
+curl http://$KILLRVIDEO_DOCKER_IP:2379/v2/keys/killrvideo/services/$SERVICE_8182_NAME?recursive=true -XDELETE
+
 echo '=> Spoofing Cassandra cluster in ETCD'
 curl http://$KILLRVIDEO_DOCKER_IP:2379/v2/keys/killrvideo/services/$SERVICE_9042_NAME/external_cluster -XPUT -d value="$EXTERNAL_CLUSTER_IP:9042"
 
 echo '=> Spoofing DSE Search in ETCD'
 curl http://$KILLRVIDEO_DOCKER_IP:2379/v2/keys/killrvideo/services/$SERVICE_8983_NAME/external_cluster -XPUT -d value="$EXTERNAL_CLUSTER_IP:8983"
+
+echo '=> Spoofing DSE Graph in ETCD'
+curl http://$KILLRVIDEO_DOCKER_IP:2379/v2/keys/killrvideo/services/$SERVICE_8182_NAME/external_cluster -XPUT -d value="$EXTERNAL_CLUSTER_IP:8182"
 
   # See if we've already completed bootstrapping
   if [ ! -f /killrvideo_bootstrapped ]; then
