@@ -28,7 +28,7 @@ echo '=> Spoofing DSE Graph in ETCD'
 curl http://$KILLRVIDEO_DOCKER_IP:2379/v2/keys/killrvideo/services/$SERVICE_8182_NAME/external_cluster -XPUT -d value="$EXTERNAL_CLUSTER_IP:8182"
 
   # See if we've already completed bootstrapping
-  if [ ! -f /killrvideo_bootstrapped ]; then
+  if [ ! -f killrvideo_bootstrapped ]; then
     echo 'Setting up KillrVideo on EXTERNAL cluster'
 
     # Wait for port 9042 (CQL) to be ready for up to 120 seconds
@@ -78,7 +78,7 @@ curl http://$KILLRVIDEO_DOCKER_IP:2379/v2/keys/killrvideo/services/$SERVICE_8182
     dse gremlin-console -e /opt/killrvideo-data/killrvideo_video_recommendations_schema.groovy
 
     # Don't bootstrap next time we start
-    touch /killrvideo_bootstrapped
+    touch killrvideo_bootstrapped
 
     # Now allow DSE to start normally below
     echo 'KillrVideo has been setup, EXTERNAL DSE cluster ready to go'
