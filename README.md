@@ -1,3 +1,4 @@
+# DEPRECATED 
 # The killrvideo-dse-external repository is now deprecated.  Please use killrvideo-dse-config instead.  Updates will no longer be made to this repository.
 Technically, unless you are directly using the capabilities for external cluster connectivity provided by killrvideo-dse-external this should really not matter to you.  If you are using killrvideo-dse-external pulling the latest changes from any of the core KillrVideo application projects should switch you over to killrvideo-dse-config automatically.  Also, killrvideo-dse-config is a more comprehensive solution that provides more capabilties and external cluster connectivity.
 https://github.com/KillrVideo/killrvideo-dse-config
